@@ -96,7 +96,7 @@ class WordsDataset(Dataset):
         return self.words[index]
 
     def get_word_index(self, word):
-        return self.indices_str[self.words.index(word)]
+        return self.words.index(word)
 
 def tokenize(paths, separator):
     result = []

@@ -1,3 +1,4 @@
+from itertools import count
 import wordgen2
 from torch.utils.data import DataLoader
 from pathlib import Path
@@ -17,5 +18,6 @@ print("Vocab size: " + str(len(train_dataloader.dataset)))
 model.eval()
 
 heh = input("Enter begin string: ")
+counter = int(input("Enter words number: "))
 
-print(' '.join(wordgen2.predict(wordgen2.train_dataloader, model, heh, 43)))
+print(' '.join(wordgen2.predict(wordgen2.train_dataloader, model, heh, counter)))

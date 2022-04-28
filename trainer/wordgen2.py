@@ -18,7 +18,7 @@ batch_size = 5
 train_dataloader = DataLoader(WordsDataset(data, 4), batch_size=batch_size)
 test_dataloader = DataLoader(WordsDataset(data, 4), batch_size=batch_size)
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = "cpu" # This is better
 print(f"Using {device} device")
 
 class NeuralNewsGen(nn.Module):
