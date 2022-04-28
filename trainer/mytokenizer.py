@@ -108,3 +108,13 @@ def tokenize(paths, separator):
             result.append(e)
 
     return result
+
+def tokenize_csv(csv, value_index, total_columns):
+    result = []
+
+    f = codecs.open(csv, "r", "utf-8")
+    data = f.read()
+    split = data.split('\n')
+    for dat in split:
+        result.append(dat.split(',')[1])
+    return result

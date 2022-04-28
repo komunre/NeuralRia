@@ -11,6 +11,7 @@ import mytokenizer
 paths = [str(x) for x in Path("./train_data").glob("*")]
 
 data = mytokenizer.tokenize(paths, "###---")
+#data = mytokenizer.tokenize_csv("train_data/reddit.csv", 2, 2) # Shit for testing (why..?)
 
 batch_size = 5
 
@@ -38,16 +39,13 @@ class NeuralNewsGen(nn.Module):
 
     def forward(self, x, prev_state):
         x = self.input(x)
-        print(x.size())
-        print(prev_state[0].size())
-        print(prev_state[1].size())
         output, state = self.lstm(x, prev_state)
         logits = self.stack(output)
         return logits, state
     
     def init_state(self, sequence_length):
-        return (torch.zeros(3, self.lstm_size, device=device),
-            torch.zeros(3, self.lstm_size, device=device))
+        return (torch.zeros(3, sequence_length, self.lstm_size, device=device),
+            torch.zeros(3, sequence_length, self.lstm_size, device=device))
 
 model = NeuralNewsGen(train_dataloader).to(device)
 print(model)
@@ -96,17 +94,15 @@ def simple_call(str):
         batched = train_dataloader.collate_fn(unbatched).to(device)
         return train_dataloader.dataset.getByIndex(model(batched))
 
-def predict(dataloader, model, text, next_words=9):
+def predict(dataloader, model, text, next_words=9, seqlen=4):
     model.eval()
 
     words = text.split(' ')
-    state_h, state_c = model.init_state(len(dataloader))
+    state_h, state_c = model.init_state(seqlen)
     for i in range(0, next_words):
-        x = torch.tensor([dataloader.dataset.get_word_index(w) for w in words[i:]], dtype=torch.int32, device=device)
-        print(len(x))
+        x = torch.tensor([[dataloader.dataset.get_word_index(w) for w in words[i:i+seqlen]]], dtype=torch.int32, device=device)
         pred, (state_h, state_c) = model(x, (state_h, state_c))
-        last_word_logits = pred[-1]
-        print(last_word_logits)
+        last_word_logits = pred[0][-1]
         p = torch.nn.functional.softmax(last_word_logits, dim=0).cpu().detach().numpy()
         word_index = np.random.choice(len(last_word_logits), p=p)
         words.append(dataloader.dataset.get_word_by_index(word_index))
@@ -114,13 +110,9 @@ def predict(dataloader, model, text, next_words=9):
     return words
 
 if __name__ == '__main__':
-    train(train_dataloader, model, loss_fn, optimizer, 25, 4)
+    train(train_dataloader, model, loss_fn, optimizer, 12, 4)
 
     print("Done!")
 
     torch.save(model.state_dict(), "model.pth")
     print("Saved the model to 'model.pth'!")
-
-    heh = "Путин назвал Украину холодной США "
-
-    predict(train_dataloader, model, heh, 9)
