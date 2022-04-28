@@ -2,4 +2,5 @@ __pycache__/
 raw_parse/*
 !raw_parse/exist.txt
 model.pth
+*.pth
 secrets/
