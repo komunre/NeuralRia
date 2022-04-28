@@ -7,7 +7,7 @@ from mytokenizer import WordsDataset
 import mytokenizer
 
 
-model = wordgen2.NeuralNewsGen()
+model = wordgen2.NeuralNewsGen(wordgen2.train_dataloader).to(device=wordgen2.device)
 model.load_state_dict(torch.load("model.pth"))
 
 train_dataloader = wordgen2.train_dataloader
@@ -16,16 +16,4 @@ model.eval()
 
 heh = input("Enter begin string: ")
 
-def simple_call(str):
-    unbatched = train_dataloader.dataset.stringToIndices(str)
-    batched = train_dataloader.collate_fn(unbatched)
-    return train_dataloader.dataset.getByIndex(model(batched))
-
-heh = heh + simple_call(heh)
-
-generated = heh
-for i in range(10):
-    addition = simple_call(generated)
-    generated = generated + ' ' + addition
-
-print(generated)
+print(' '.join(wordgen2.predict(wordgen2.train_dataloader, model, heh, 9)))

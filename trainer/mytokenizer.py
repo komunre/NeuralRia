@@ -14,9 +14,10 @@ def floatToIndex(float, max):
     return index
 
 class WordsDataset(Dataset):
-    def __init__(self, texts):
+    def __init__(self, texts, seqlen):
         self.text_arr = texts
 
+        self.sequence_length = seqlen
         self.create_per_word()
     
     def create_per_word(self):
@@ -43,20 +44,11 @@ class WordsDataset(Dataset):
         if torch.is_tensor(index):
             index = index.tolist()
 
-        value = np.array([ [indexToFloat(self.indices_str[index - 1], len(self.words))],
-         [indexToFloat(self.indices_str[index], len(self.words))],
-         [indexToFloat(self.indices_str[index + 1], len(self.words))],
-         [indexToFloat(self.indices_str[index + 2], len(self.words))],
-         [indexToFloat(self.indices_str[index + 3], len(self.words))] ], dtype=np.float32)
+        value = torch.tensor(self.indices_str[index:index+self.sequence_length], device="cuda")
         
-        train = np.array([ [indexToFloat(self.indices_str[index], len(self.words))],
-            [indexToFloat(self.indices_str[index + 1], len(self.words))],
-            [indexToFloat(self.indices_str[index + 2], len(self.words))],
-            [indexToFloat(self.indices_str[index + 3], len(self.words))],
-            [indexToFloat(self.indices_str[index + 4], len(self.words))],
-        ], dtype=np.float32)
+        train = torch.tensor(self.indices_str[index+1:index+self.sequence_length+1], device="cuda")
 
-        return (torch.from_numpy(value), torch.from_numpy(train))
+        return value, train
 
     def cleanup_word(self, word):
         word = word.replace(",", "")
@@ -99,6 +91,12 @@ class WordsDataset(Dataset):
         for i in index[0]:
             str += self.words[floatToIndex(i, len(self.words))] + " "
         return str
+
+    def get_word_by_index(self, index):
+        return self.words[index]
+
+    def get_word_index(self, word):
+        return self.indices_str[self.words.index(word)]
 
 def tokenize(paths, separator):
     result = []

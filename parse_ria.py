@@ -28,7 +28,7 @@ res = requests.get('https://ria.ru/politics/', headers={
 
 parser.feed(res.text)
 
-f = codecs.open("parsed_" + ''.join(random.choices("abcdefghijklmnopqrst1234567890", k=15)), "a", "utf-8")
+f = codecs.open("raw_parse/" + "parsed_" + ''.join(random.choices("abcdefghijklmnopqrst1234567890", k=15)), "a", "utf-8")
 
 print(parser.items)
 f.write("\n###---".join(parser.items))
